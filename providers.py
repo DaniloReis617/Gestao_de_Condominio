@@ -1,13 +1,19 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+from database import get_condos
 
 def manage_providers():
     st.query_params.clear()
     st.title("Gerenciar Prestadores de Serviços")
 
+    condos = get_condos()
+    condo_names = [condo[1] for condo in condos]
+    condo_dict = {condo[1]: condo[0] for condo in condos}
+
     with st.form("add_provider_form"):
-        condo_id = st.number_input("ID do Condomínio", min_value=1)
+        selected_condo = st.selectbox("Selecione o Condomínio", condo_names)
+        condo_id = condo_dict[selected_condo]
         provider_name = st.text_input("Nome do Prestador")
         service = st.text_input("Serviço Prestado")
         contact_info = st.text_input("Informações de Contato")

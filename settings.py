@@ -3,6 +3,7 @@ import sqlite3
 import smtplib
 from email.mime.text import MIMEText
 from auth import get_user_profile
+from database import get_condos
 
 def manage_settings():
     st.query_params.page = "Gerenciar Configurações"
@@ -20,11 +21,16 @@ def manage_settings():
         edit_condo()
 
 def add_user():
+    condos = get_condos()
+    condo_names = [condo[1] for condo in condos]
+    condo_dict = {condo[1]: condo[0] for condo in condos}
+
     with st.form("add_user_form"):
         username = st.text_input("Nome de Usuário")
         email = st.text_input("E-mail")
         profile = st.selectbox("Perfil", ["Síndico", "Subsindico", "Morador"])
-        condo_id = st.number_input("ID do Condomínio", min_value=1)
+        selected_condo = st.selectbox("Selecione o Condomínio", condo_names)
+        condo_id = condo_dict[selected_condo]
         submitted = st.form_submit_button("Adicionar Usuário")
         
         if submitted:
@@ -66,6 +72,10 @@ def add_condo():
             st.success("Condomínio adicionado com sucesso")
 
 def edit_user():
+    condos = get_condos()
+    condo_names = [condo[1] for condo in condos]
+    condo_dict = {condo[1]: condo[0] for condo in condos}
+
     st.write("### Editar Usuário")
     user_id = st.number_input("ID do Usuário", min_value=1)
     conn = sqlite3.connect('condo.db')
@@ -87,12 +97,8 @@ def edit_user():
         else:
             profile = st.selectbox("Perfil", ["Síndico", "Subsindico", "Morador"], index=["Síndico", "Subsindico", "Morador"].index(user[3]))
         
-        condo_id = st.number_input("ID do Condomínio", min_value=1, value=user[5])
-        
-        cursor.execute("SELECT name FROM condos WHERE id=?", (condo_id,))
-        condo = cursor.fetchone()
-        if condo:
-            st.text(f"Nome do Condomínio: {condo[0]}")
+        selected_condo = st.selectbox("Selecione o Condomínio", condo_names, index=condo_names.index(next(name for name, id in condo_dict.items() if id == user[5])))
+        condo_id = condo_dict[selected_condo]
         
         if st.button("Atualizar Usuário"):
             cursor.execute("UPDATE users SET username=?, email=?, profile=?, condo_id=? WHERE id=?", 
@@ -106,7 +112,13 @@ def edit_user():
 
 def edit_condo():
     st.write("### Editar Condomínio")
-    condo_id = st.number_input("ID do Condomínio", min_value=1)
+    condos = get_condos()
+    condo_names = [condo[1] for condo in condos]
+    condo_dict = {condo[1]: condo[0] for condo in condos}
+
+    selected_condo = st.selectbox("Selecione o Condomínio", condo_names)
+    condo_id = condo_dict[selected_condo]
+
     conn = sqlite3.connect('condo.db')
     cursor = conn.cursor()
     

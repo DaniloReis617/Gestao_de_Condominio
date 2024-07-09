@@ -1,14 +1,27 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+from database import get_condos, get_users
 
 def manage_payments():
     st.query_params.clear()
     st.title("Gerenciar Pagamentos")
 
+    condos = get_condos()
+    condo_names = [condo[1] for condo in condos]
+    condo_dict = {condo[1]: condo[0] for condo in condos}
+
     with st.form("add_payment_form"):
-        condo_id = st.number_input("ID do Condomínio", min_value=1)
-        resident_id = st.number_input("ID do Morador", min_value=1)
+        selected_condo = st.selectbox("Selecione o Condomínio", condo_names)
+        condo_id = condo_dict[selected_condo]
+
+        users = get_users(condo_id)
+        user_names = [user[1] for user in users]
+        user_dict = {user[1]: user[0] for user in users}
+
+        selected_resident = st.selectbox("Selecione o Morador", user_names)
+        resident_id = user_dict[selected_resident]
+
         amount = st.number_input("Valor", min_value=0.0)
         payment_date = st.date_input("Data de Pagamento")
         submitted = st.form_submit_button("Registrar Pagamento")

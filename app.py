@@ -33,11 +33,10 @@ def main():
         default_page = "Dashboard"
         selected_page = query_params.get("page", default_page)
 
-        if profile == "Síndico" or profile == "ADM":
-            for page, func in PAGES.items():
-                if st.sidebar.button(page):
-                    st.query_params.page = page
-                    st.experimental_rerun()
+        for page, func in PAGES.items():
+            if st.sidebar.button(page):
+                st.query_params.page = page
+                st.experimental_rerun()
 
         if st.sidebar.button("Logout"):
             st.session_state.logged_in = False
@@ -50,7 +49,6 @@ def main():
         login()
 
 if __name__ == "__main__":
-    # Checar se está na tela de completar cadastro
     query_params = st.query_params.to_dict()
     if 'complete_registration' in query_params:
         complete_registration()
